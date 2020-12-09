@@ -1,0 +1,58 @@
+<template>
+  <b-container fluid="xl">
+    <page-title />
+    <page-section>
+      <p>{{ dbusVisMessage }}</p>
+      <p style="color:red">{{ dbusVisErrorMessage }}</p>
+      <b-button @click="startCapture">Start Capture</b-button>
+      <b-button @click="captureStatus">Capture Status</b-button>
+      <b-button @click="stopCapture">Stop Capture</b-button>
+      <b-button @click="downloadCapture">Download Capture</b-button>
+    </page-section>
+  </b-container>
+</template>
+
+<script>
+import PageTitle from '../../../components/Global/PageTitle';
+import PageSection from '../../../components/Global/PageSection';
+
+export default {
+  name: 'MyHelloWorld',
+  components: { PageTitle, PageSection },
+  computed: {
+    dbusVisMessage() {
+      return this.$store.getters['dbusVis/getMessage'];
+    },
+    dbusVisErrorMessage() {
+      return this.$store.getters['dbusVis/getErrorMessage'];
+    }
+  },
+  created() {
+    console.log('created()');
+  },
+  beforeRouteLeave(to, from, next) {
+    console.log(
+      'beforeRouteLeave, to=' + to + ', from=' + from + ', next=' + next
+    );
+    next();
+  },
+  methods: {
+    startCapture() {
+      console.log('startCapture');
+      console.log(this.$store.dispatch('dbusVis/startDbusCapture'));
+    },
+    captureStatus() {
+      console.log('captureStatus');
+      console.log(this.$store.dispatch('dbusVis/getDbusCaptureStatus'));
+    },
+    stopCapture() {
+      console.log('stopCapture');
+      console.log(this.$store.dispatch('dbusVis/stopDbusCapture'));
+    },
+    downloadCapture() {
+      console.log('downloadCapture');
+      console.log(this.$store.dispatch('dbusVis/downloadCapture'));
+    }
+  }
+};
+</script>

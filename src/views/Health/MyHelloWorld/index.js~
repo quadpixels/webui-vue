@@ -1,0 +1,2 @@
+import MyHelloWorld from './MyHelloWorld.vue';
+export default MyHelloWorld;

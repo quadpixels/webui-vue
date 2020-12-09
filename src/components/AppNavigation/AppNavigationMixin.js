@@ -42,6 +42,11 @@ const AppNavigationMixin = {
               id: 'sensors',
               label: this.$t('appNavigation.sensors'),
               route: '/health/sensors'
+            },
+            {
+              id: 'myhelloworld',
+              label: 'My Hello World',
+              route: '/health/myhelloworld'
             }
           ]
         },

@@ -3,6 +3,7 @@ import ChangePassword from '@/views/ChangePassword';
 import ConsoleLayout from '@/layouts/ConsoleLayout.vue';
 import DateTimeSettings from '@/views/Configuration/DateTimeSettings';
 import EventLogs from '@/views/Health/EventLogs';
+import MyHelloWorld from '@/views/Health/MyHelloWorld';
 import Firmware from '@/views/Configuration/Firmware';
 import HardwareStatus from '@/views/Health/HardwareStatus';
 import Kvm from '@/views/Control/Kvm';
@@ -121,6 +122,14 @@ const routes = [
         component: Sensors,
         meta: {
           title: i18n.t('appPageTitle.sensors')
+        }
+      },
+      {
+        path: '/health/myhelloworld',
+        name: 'myhelloworld',
+        component: MyHelloWorld,
+        meta: {
+          title: 'My Hello World'
         }
       },
       {
