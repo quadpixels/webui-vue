@@ -2,7 +2,7 @@
   <span>
     <b-link
       v-if="value === 'export'"
-      class="align-bottom btn-link py-0"
+      class="align-bottom btn-icon-only py-0 btn-link"
       :download="download"
       :href="href"
       :title="title"
@@ -15,11 +15,11 @@
     <b-button
       v-else
       variant="link"
-      class="py-0"
+      class="btn-icon-only"
       :aria-label="title"
       :title="title"
       :disabled="!enabled"
-      @click="$emit('click:tableAction', value)"
+      @click="$emit('click-table-action', value)"
     >
       <slot name="icon">
         {{ title }}
@@ -36,24 +36,24 @@ export default {
   props: {
     value: {
       type: String,
-      required: true
+      required: true,
     },
     enabled: {
       type: Boolean,
-      default: true
+      default: true,
     },
     title: {
       type: String,
-      default: null
+      default: null,
     },
     rowData: {
       type: Object,
-      default: () => {}
+      default: () => {},
     },
     exportName: {
       type: String,
-      default: 'export'
-    }
+      default: 'export',
+    },
   },
   computed: {
     dataForExport() {
@@ -64,7 +64,7 @@ export default {
     },
     href() {
       return `data:text/json;charset=utf-8,${this.dataForExport}`;
-    }
-  }
+    },
+  },
 };
 </script>

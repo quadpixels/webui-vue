@@ -1,6 +1,6 @@
 <template>
   <b-form
-    class="login-form  mx-auto ml-md-5 mb-3"
+    class="login-form mx-auto ml-md-5 mb-3"
     novalidate
     @submit.prevent="login"
   >
@@ -67,9 +67,9 @@
 
 <script>
 import { required } from 'vuelidate/lib/validators';
-import VuelidateMixin from '../../components/Mixins/VuelidateMixin.js';
-import i18n from '../../i18n';
-import Alert from '../../components/Global/Alert';
+import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
+import i18n from '@/i18n';
+import Alert from '@/components/Global/Alert';
 
 export default {
   name: 'Login',
@@ -79,45 +79,45 @@ export default {
     return {
       userInfo: {
         username: null,
-        password: null
+        password: null,
       },
       disableSubmitButton: false,
       languages: [
         {
           value: 'en-US',
-          text: 'English'
+          text: 'English',
         },
         {
           value: 'es',
-          text: 'Español'
-        }
-      ]
+          text: 'Español',
+        },
+      ],
     };
   },
   computed: {
     authError() {
       return this.$store.getters['authentication/authError'];
-    }
+    },
   },
   validations: {
     userInfo: {
       username: {
-        required
+        required,
       },
       password: {
-        required
-      }
-    }
+        required,
+      },
+    },
   },
   methods: {
-    login: function() {
+    login: function () {
       this.$v.$touch();
       if (this.$v.$invalid) return;
       this.disableSubmitButton = true;
       const username = this.userInfo.username;
       const password = this.userInfo.password;
       this.$store
-        .dispatch('authentication/login', [username, password])
+        .dispatch('authentication/login', { username, password })
         .then(() => {
           localStorage.setItem('storedLanguage', i18n.locale);
           localStorage.setItem('storedUsername', username);
@@ -128,17 +128,17 @@ export default {
             username
           );
         })
-        .then(passwordChangeRequired => {
+        .then((passwordChangeRequired) => {
           if (passwordChangeRequired) {
             this.$router.push('/change-password');
           } else {
             this.$router.push('/');
           }
         })
-        .catch(error => console.log(error))
+        .catch((error) => console.log(error))
         .finally(() => (this.disableSubmitButton = false));
-    }
-  }
+    },
+  },
 };
 </script>
 

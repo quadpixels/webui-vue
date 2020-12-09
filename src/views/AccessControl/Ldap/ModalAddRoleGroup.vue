@@ -1,6 +1,6 @@
 <template>
   <b-modal id="modal-role-group" ref="modal" @ok="onOk" @hidden="resetForm">
-    <template v-slot:modal-title>
+    <template #modal-title>
       <template v-if="roleGroup">
         {{ $t('pageLdap.modal.editRoleGroup') }}
       </template>
@@ -11,7 +11,7 @@
     <b-container>
       <b-row>
         <b-col sm="8">
-          <b-form id="role-group">
+          <b-form id="role-group" @submit.prevent="handleSubmit">
             <!-- Edit role group -->
             <template v-if="roleGroup !== null">
               <dl class="mb-4">
@@ -49,7 +49,7 @@
                 :state="getValidationState($v.form.groupPrivilege)"
                 @input="$v.form.groupPrivilege.$touch()"
               >
-                <template v-if="!roleGroup" v-slot:first>
+                <template v-if="!roleGroup" #first>
                   <b-form-select-option :value="null" disabled>
                     {{ $t('global.form.selectAnOption') }}
                   </b-form-select-option>
@@ -63,11 +63,11 @@
         </b-col>
       </b-row>
     </b-container>
-    <template v-slot:modal-footer="{ ok, cancel }">
+    <template #modal-footer="{ cancel }">
       <b-button variant="secondary" @click="cancel()">
         {{ $t('global.action.cancel') }}
       </b-button>
-      <b-button form="role-group" type="submit" variant="primary" @click="ok()">
+      <b-button form="role-group" type="submit" variant="primary" @click="onOk">
         <template v-if="roleGroup">
           {{ $t('global.action.save') }}
         </template>
@@ -89,47 +89,47 @@ export default {
     roleGroup: {
       type: Object,
       default: null,
-      validator: prop => {
+      validator: (prop) => {
         if (prop === null) return true;
         return (
-          prop.hasOwnProperty('groupName') &&
-          prop.hasOwnProperty('groupPrivilege')
+          Object.prototype.hasOwnProperty.call(prop, 'groupName') &&
+          Object.prototype.hasOwnProperty.call(prop, 'groupPrivilege')
         );
-      }
-    }
+      },
+    },
   },
   data() {
     return {
       form: {
         groupName: null,
-        groupPrivilege: null
-      }
+        groupPrivilege: null,
+      },
     };
   },
   computed: {
     accountRoles() {
       return this.$store.getters['localUsers/accountRoles'];
-    }
+    },
   },
   watch: {
-    roleGroup: function(value) {
+    roleGroup: function (value) {
       if (value === null) return;
       this.form.groupName = value.groupName;
       this.form.groupPrivilege = value.groupPrivilege;
-    }
+    },
   },
   validations() {
     return {
       form: {
         groupName: {
-          required: requiredIf(function() {
+          required: requiredIf(function () {
             return !this.roleGroup;
-          })
+          }),
         },
         groupPrivilege: {
-          required
-        }
-      }
+          required,
+        },
+      },
     };
   },
   methods: {
@@ -139,7 +139,7 @@ export default {
       this.$emit('ok', {
         addNew: !this.roleGroup,
         groupName: this.form.groupName,
-        groupPrivilege: this.form.groupPrivilege
+        groupPrivilege: this.form.groupPrivilege,
       });
       this.closeModal();
     },
@@ -158,7 +158,7 @@ export default {
       // prevent modal close
       bvModalEvt.preventDefault();
       this.handleSubmit();
-    }
-  }
+    },
+  },
 };
 </script>

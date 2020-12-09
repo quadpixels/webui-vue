@@ -21,18 +21,18 @@
     "ariaLabel": {
       "clearSearch": "Clear search input",
       "hidePassword": "Hide password",
+      "scrollToTop": "Scroll to top",
       "showPassword": "Show password as plain text. Note: this will visually expose your password on the screen.",
       "tooltip": "Tooltip",
       "progressBar": "Page loading progress bar"
     },
     "calendar": {
-      "openDatePicker": "Open date picker",
+      "selectDate": "Select date",
       "useCursorKeysToNavigateCalendarDates": "Use cursor keys to navigate calendar dates"
     },
     "fileUpload": {
-      "browseText": "Browse",
-      "dropPlaceholder": "Drop files here",
-      "placeholder": "No file selected"
+      "browseText": "Add file",
+      "clearSelectedFile": "Clear selected file"
     },
     "form": {
       "dateMustBeAfter": "Date must be after %{date}",
@@ -69,9 +69,15 @@
       "fromDate": "From date",
       "items": "%{count} items",
       "itemsPerPage": "Items per page",
+      "selectAll": "Select all",
+      "selectItem": "Select item",
       "selectedItems":"%{filterCount} of %{count} items",
       "toDate": "To date",
       "viewAll": "View all"
+    },
+    "toast": {
+      "unAuthTitle": "Unauthorized",
+      "unAuthDescription": "The attempted action is not accessible from the logged in account. Contact your system administrator to check your privilege role."
     }
   },
   "appHeader": {
@@ -134,7 +140,6 @@
     "serverPowerOperations": "Server power operations",
     "snmpSettings": "SNMP settings",
     "sslCertificates": "SSL certificates",
-    "unauthorized": "Unauthorized",
     "virtualMedia": "Virtual media"
   },
   "pageChangePassword": {
@@ -196,9 +201,13 @@
     "changeAndRebootBmc": "Change image and reboot BMC",
     "changeToBackupImage": "Change to backup image",
     "current": "Current:",
+    "firmwareOnBmc": "Firmware on BMC",
+    "firmwareOnHost": "Firmware on host",
     "firmwareOnSystem": "Firmware on system",
     "hostStatus": "Host status",
-    "pageDescription": "Update firmware by uploading a system image file from your workstation or TFTP server",
+    "makeCurrentVersion": "Make current version",
+    "pageDescription": "Update firmware by uploading a BMC or Host image file from your workstation or TFTP server",
+    "pageDescriptionSingleImage": "Update firmware by uploading a system image file from your workstation or TFTP server",
     "running": "Running",
     "state": "State",
     "updateCode": "Update code",
@@ -208,7 +217,8 @@
       "serverShutdownRequiredInfo": "Shutdown will be orderly - OS will shutdown before the server shuts down.",
       "shutDownServer": "Shut down server",
       "updateProcess": "Update process",
-      "updateProcessInfo": "The new image will be uploaded and activated. After that, the BMC will reboot automatically to run from the new image."
+      "updateProcessInfo": "The new image will be uploaded and activated. After that, the BMC or host will reboot automatically to run from the new image.",
+      "updateProcessInfoSingleImage": "The new image will be uploaded and activated. After that, the BMC will reboot automatically to run from the new image."
     },
     "form": {
       "imageFile": "Image file",
@@ -218,6 +228,7 @@
       "tftpServerAddress": "TFTP server address",
       "tftpServerAddressHelper": "IP address or FQDN",
       "uploadAndRebootBmc": "Upload and reboot BMC",
+      "uploadAndRebootBmcOrHost": "Upload and reboot BMC or host",
       "uploadLocation": "Upload location",
       "workstation": "Workstation"
     },
@@ -233,12 +244,19 @@
         "primaryAction": "Reboot BMC from backup image",
         "title": "@:pageFirmware.modal.connectionToBmcWillBeLost"
       },
-      "uploadAndReboot": {
+      "uploadAndRebootSingleImage": {
         "message1": "A BMC reboot is required before the system can run the new firmware image. The reboot will cause a disconnection, and may require logging in again.",
         "message2": "During the reboot, the server cannot be powered back on. The backup image will be permanently deleted.",
         "message3": "Are you sure you want to upload the new firmware image and reboot the BMC?",
         "primaryAction": "Upload and reboot BMC",
         "title": "@:pageFirmware.modal.connectionToBmcWillBeLost"
+      },
+      "uploadAndRebootBmcOrHost": {
+        "message1": "A BMC or host reboot is required before the system can run the new firmware image. The reboot will cause a disconnection, and may require logging in again.",
+        "message2": "The backup image will be permanently deleted.",
+        "message3": "Are you sure you want to upload the new firmware image and reboot the BMC or host?",
+        "primaryAction": "Upload and reboot BMC or host",
+        "title": "Connection to BMC or host will be lost"
       }
     },
     "toast": {
@@ -546,7 +564,7 @@
     "disconnected": "Disconnected",
     "openNewTab": "Open in new tab",
     "status": "Status",
-    "subTitle": "SOL console redirects server's serial port output to this window."
+    "subTitle": "SOL console redirects the server's serial port output to this window."
   },
   "pageServerLed": {
     "serverLedSubTitle": "Server indicator LED",
@@ -644,9 +662,6 @@
       "successDeleteCertificate": "Successfully deleted %{certificate}.",
       "successReplaceCertificate": "Successfully replaced %{certificate}."
     }
-  },
-  "pageUnauthorized": {
-    "description": "The attempted action is not accessible from the logged in account. Contact your system administrator to check your privilege role."
   },
   "pageVirtualMedia": {
     "configureConnection": "Configure Connection",

@@ -12,7 +12,7 @@
             :data-test-id="`table-button-${action.value}Selected`"
             variant="primary"
             class="d-block"
-            @click="$emit('batchAction', action.value)"
+            @click="$emit('batch-action', action.value)"
           >
             {{ action.label }}
           </b-button>
@@ -20,7 +20,7 @@
           <b-button
             variant="secondary"
             class="d-block"
-            @click="$emit('clearSelected')"
+            @click="$emit('clear-selected')"
           >
             {{ $t('global.action.cancel') }}
           </b-button>
@@ -36,34 +36,35 @@ export default {
   props: {
     selectedItemsCount: {
       type: Number,
-      required: true
+      required: true,
     },
     actions: {
       type: Array,
       default: () => [],
-      validator: prop => {
-        return prop.every(action => {
+      validator: (prop) => {
+        return prop.every((action) => {
           return (
-            action.hasOwnProperty('value') && action.hasOwnProperty('label')
+            Object.prototype.hasOwnProperty.call(action, 'value') &&
+            Object.prototype.hasOwnProperty.call(action, 'label')
           );
         });
-      }
-    }
+      },
+    },
   },
   data() {
     return {
-      isToolbarActive: false
+      isToolbarActive: false,
     };
   },
   watch: {
-    selectedItemsCount: function(selectedItemsCount) {
+    selectedItemsCount: function (selectedItemsCount) {
       if (selectedItemsCount > 0) {
         this.isToolbarActive = true;
       } else {
         this.isToolbarActive = false;
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -102,7 +103,8 @@ $toolbar-height: 46px;
 .slide-leave-active {
   transition: transform $duration--moderate-02 $exit-easing--productive;
 }
-.slide-enter,
+.slide-enter, // Remove this vue2 based only class when switching to vue3
+.slide-enter-from, // This is vue3 based only class modified from 'slide-enter'
 .slide-leave-to {
   transform: translateY($toolbar-height);
 }

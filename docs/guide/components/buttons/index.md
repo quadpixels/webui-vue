@@ -4,7 +4,14 @@ Buttons are used to perform an action. The main buttons in the application are t
 
 [Learn more about Bootstrap-vue buttons](https://bootstrap-vue.js.org/docs/components/button)
 
-<BmcButtons />
+### Enabled buttons
+
+![Button examples](./button.png)
+
+### Disabled buttons
+
+![Disabled button examples](./button-disabled.png)
+
 
 ```vue
 // Enabled Buttons
@@ -13,6 +20,11 @@ Buttons are used to perform an action. The main buttons in the application are t
   <icon-add />
   <span>Primary with icon</span>
 </b-button>
+<b-button variant="link">
+  <icon-trashcan />
+  <span class="sr-only">Delete</span>
+</b-button>
+
 <b-button variant="secondary">Secondary</b-button>
 <b-button variant="danger">Danger</b-button>
 <b-button variant="link">Link Button</b-button>

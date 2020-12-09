@@ -1,6 +1,11 @@
 <template>
-  <b-button v-b-tooltip variant="link" class="btn-tooltip" :title="title">
-    <span class="sr-only">{{ $t('global.ariaLabel.tooltip') }}</span>
+  <b-button
+    v-b-tooltip
+    variant="link"
+    class="btn-tooltip btn-icon-only"
+    :title="title"
+    :aria-label="$t('global.ariaLabel.tooltip')"
+  >
     <icon-tooltip />
   </b-button>
 </template>
@@ -13,9 +18,9 @@ export default {
   props: {
     title: {
       type: String,
-      default: ''
-    }
-  }
+      default: '',
+    },
+  },
 };
 </script>
 

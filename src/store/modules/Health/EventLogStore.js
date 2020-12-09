@@ -17,31 +17,32 @@ const getHealthStatus = (events, loadedEvents) => {
 
 // TODO: High priority events should also check if Log
 // is resolved when the property is available in Redfish
-const getHighPriorityEvents = events =>
+const getHighPriorityEvents = (events) =>
   events.filter(({ severity }) => severity === 'Critical');
 
 const EventLogStore = {
   namespaced: true,
   state: {
     allEvents: [],
-    loadedEvents: false
+    loadedEvents: false,
   },
   getters: {
-    allEvents: state => state.allEvents,
-    highPriorityEvents: state => getHighPriorityEvents(state.allEvents),
-    healthStatus: state => getHealthStatus(state.allEvents, state.loadedEvents)
+    allEvents: (state) => state.allEvents,
+    highPriorityEvents: (state) => getHighPriorityEvents(state.allEvents),
+    healthStatus: (state) =>
+      getHealthStatus(state.allEvents, state.loadedEvents),
   },
   mutations: {
     setAllEvents: (state, allEvents) => (
       (state.allEvents = allEvents), (state.loadedEvents = true)
-    )
+    ),
   },
   actions: {
     async getEventLogData({ commit }) {
       return await api
         .get('/redfish/v1/Systems/system/LogServices/EventLog/Entries')
         .then(({ data: { Members = [] } = {} }) => {
-          const eventLogs = Members.map(log => {
+          const eventLogs = Members.map((log) => {
             const { Id, Severity, Created, EntryType, Message } = log;
             return {
               id: Id,
@@ -49,25 +50,37 @@ const EventLogStore = {
               date: new Date(Created),
               type: EntryType,
               description: Message,
-              uri: log['@odata.id']
+              uri: log['@odata.id'],
             };
           });
           commit('setAllEvents', eventLogs);
         })
-        .catch(error => {
+        .catch((error) => {
           console.log('Event Log Data:', error);
         });
     },
+    async deleteAllEventLogs({ dispatch }, data) {
+      return await api
+        .post(
+          '/redfish/v1/Systems/system/LogServices/EventLog/Actions/LogService.ClearLog'
+        )
+        .then(() => dispatch('getEventLogData'))
+        .then(() => i18n.tc('pageEventLogs.toast.successDelete', data))
+        .catch((error) => {
+          console.log(error);
+          throw new Error(i18n.tc('pageEventLogs.toast.errorDelete', data));
+        });
+    },
     async deleteEventLogs({ dispatch }, uris = []) {
-      const promises = uris.map(uri =>
-        api.delete(uri).catch(error => {
+      const promises = uris.map((uri) =>
+        api.delete(uri).catch((error) => {
           console.log(error);
           return error;
         })
       );
       return await api
         .all(promises)
-        .then(response => {
+        .then((response) => {
           dispatch('getEventLogData');
           return response;
         })
@@ -95,8 +108,8 @@ const EventLogStore = {
             return toastMessages;
           })
         );
-    }
-  }
+    },
+  },
 };
 
 export default EventLogStore;

@@ -1,32 +1,24 @@
 <template>
   <div :class="isFullWindow ? 'full-window-container' : 'terminal-container'">
-    <template>
-      <b-row class="d-flex">
-        <b-col class="d-flex flex-column justify-content-end">
-          <dl class="mb-2" sm="6" md="6">
-            <dt class="d-inline font-weight-bold mr-1">
-              {{ $t('pageSerialOverLan.status') }}:
-            </dt>
-            <dd class="d-inline">
-              <status-icon :status="hostStatusIcon" /> {{ connectionStatus }}
-            </dd>
-          </dl>
-        </b-col>
+    <b-row class="d-flex">
+      <b-col class="d-flex flex-column justify-content-end">
+        <dl class="mb-2" sm="6" md="6">
+          <dt class="d-inline font-weight-bold mr-1">
+            {{ $t('pageSerialOverLan.status') }}:
+          </dt>
+          <dd class="d-inline">
+            <status-icon :status="hostStatusIcon" /> {{ connectionStatus }}
+          </dd>
+        </dl>
+      </b-col>
 
-        <b-col v-if="!isFullWindow" class="d-flex justify-content-end">
-          <b-button
-            variant="link"
-            type="button"
-            class="pr-0 button-launch"
-            @click="openConsoleWindow()"
-          >
-            <icon-launch aria-hidden="true" />
-
-            {{ $t('pageSerialOverLan.openNewTab') }}
-          </b-button>
-        </b-col>
-      </b-row>
-    </template>
+      <b-col v-if="!isFullWindow" class="d-flex justify-content-end">
+        <b-button variant="link" type="button" @click="openConsoleWindow()">
+          <icon-launch />
+          {{ $t('pageSerialOverLan.openNewTab') }}
+        </b-button>
+      </b-col>
+    </b-row>
     <div id="terminal" ref="panel"></div>
   </div>
 </template>
@@ -42,13 +34,13 @@ export default {
   name: 'SerialOverLanConsole',
   components: {
     IconLaunch,
-    StatusIcon
+    StatusIcon,
   },
   props: {
     isFullWindow: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
   computed: {
     hostStatus() {
@@ -61,7 +53,7 @@ export default {
       return this.hostStatus === 'on'
         ? this.$t('pageSerialOverLan.connected')
         : this.$t('pageSerialOverLan.disconnected');
-    }
+    },
   },
   created() {
     this.$store.dispatch('global/getHostStatus');
@@ -74,7 +66,7 @@ export default {
       const token = this.$store.getters['authentication/token'];
 
       const ws = new WebSocket(`wss://${window.location.host}/console0`, [
-        token
+        token,
       ]);
 
       // Refer https://github.com/xtermjs/xterm.js/ for xterm implementation and addons.
@@ -82,7 +74,7 @@ export default {
       const term = new Terminal({
         fontSize: 15,
         fontFamily:
-          'SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace'
+          'SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace',
       });
 
       const attachAddon = new AttachAddon(ws);
@@ -94,7 +86,7 @@ export default {
       const SOL_THEME = {
         background: '#19273c',
         cursor: 'rgba(83, 146, 255, .5)',
-        scrollbar: 'rgba(83, 146, 255, .5)'
+        scrollbar: 'rgba(83, 146, 255, .5)',
       };
       term.setOption('theme', SOL_THEME);
 
@@ -102,10 +94,10 @@ export default {
       fitAddon.fit();
 
       try {
-        ws.onopen = function() {
+        ws.onopen = function () {
           console.log('websocket console0/ opened');
         };
-        ws.onclose = function(event) {
+        ws.onclose = function (event) {
           console.log(
             'websocket console0/ closed. code: ' +
               event.code +
@@ -123,8 +115,8 @@ export default {
         '_blank',
         'directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=yes,width=600,height=550'
       );
-    }
-  }
+    },
+  },
 };
 </script>
 

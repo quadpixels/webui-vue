@@ -1,12 +1,12 @@
 <template>
   <b-container fluid="xl">
     <page-title />
-    <b-row>
+    <b-row class="align-items-end">
       <b-col sm="6" md="5" xl="4">
         <search
           :placeholder="$t('pageSensors.searchForSensors')"
-          @changeSearch="onChangeSearchInput"
-          @clearSearch="onClearSearchInput"
+          @change-search="onChangeSearchInput"
+          @clear-search="onClearSearchInput"
         />
       </b-col>
       <b-col sm="3" md="3" xl="2">
@@ -16,7 +16,7 @@
         ></table-cell-count>
       </b-col>
       <b-col sm="3" md="4" xl="6" class="text-right">
-        <table-filter :filters="tableFilters" @filterChange="onFilterChange" />
+        <table-filter :filters="tableFilters" @filter-change="onFilterChange" />
       </b-col>
     </b-row>
     <b-row>
@@ -24,9 +24,9 @@
         <table-toolbar
           ref="toolbar"
           :selected-items-count="selectedRows.length"
-          @clearSelected="clearSelectedRows($refs.table)"
+          @clear-selected="clearSelectedRows($refs.table)"
         >
-          <template v-slot:export>
+          <template #export>
             <table-toolbar-export
               :data="selectedRows"
               :file-name="exportFileNameByDate()"
@@ -56,37 +56,40 @@
           @row-selected="onRowSelected($event, filteredSensors.length)"
         >
           <!-- Checkbox column -->
-          <template v-slot:head(checkbox)>
+          <template #head(checkbox)>
             <b-form-checkbox
               v-model="tableHeaderCheckboxModel"
               :indeterminate="tableHeaderCheckboxIndeterminate"
               @change="onChangeHeaderCheckbox($refs.table)"
-            />
+            >
+              <span class="sr-only">{{ $t('global.table.selectAll') }}</span>
+            </b-form-checkbox>
           </template>
-          <template v-slot:cell(checkbox)="row">
+          <template #cell(checkbox)="row">
             <b-form-checkbox
               v-model="row.rowSelected"
               @change="toggleSelectRow($refs.table, row.index)"
-            />
+            >
+              <span class="sr-only">{{ $t('global.table.selectItem') }}</span>
+            </b-form-checkbox>
           </template>
 
-          <template v-slot:cell(status)="{ value }">
-            <status-icon :status="statusIcon(value)" />
-            {{ value }}
+          <template #cell(status)="{ value }">
+            <status-icon :status="statusIcon(value)" /> {{ value }}
           </template>
-          <template v-slot:cell(currentValue)="data">
+          <template #cell(currentValue)="data">
             {{ data.value }} {{ data.item.units }}
           </template>
-          <template v-slot:cell(lowerCaution)="data">
+          <template #cell(lowerCaution)="data">
             {{ data.value }} {{ data.item.units }}
           </template>
-          <template v-slot:cell(upperCaution)="data">
+          <template #cell(upperCaution)="data">
             {{ data.value }} {{ data.item.units }}
           </template>
-          <template v-slot:cell(lowerCritical)="data">
+          <template #cell(lowerCritical)="data">
             {{ data.value }} {{ data.item.units }}
           </template>
-          <template v-slot:cell(upperCritical)="data">
+          <template #cell(upperCritical)="data">
             {{ data.value }} {{ data.item.units }}
           </template>
         </b-table>
@@ -104,12 +107,18 @@ import TableToolbar from '@/components/Global/TableToolbar';
 import TableToolbarExport from '@/components/Global/TableToolbarExport';
 import TableCellCount from '@/components/Global/TableCellCount';
 
-import BVTableSelectableMixin from '@/components/Mixins/BVTableSelectableMixin';
+import BVTableSelectableMixin, {
+  selectedRows,
+  tableHeaderCheckboxModel,
+  tableHeaderCheckboxIndeterminate,
+} from '@/components/Mixins/BVTableSelectableMixin';
 import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
 import TableFilterMixin from '@/components/Mixins/TableFilterMixin';
 import TableDataFormatterMixin from '@/components/Mixins/TableDataFormatterMixin';
 import TableSortMixin from '@/components/Mixins/TableSortMixin';
-import SearchFilterMixin from '@/components/Mixins/SearchFilterMixin';
+import SearchFilterMixin, {
+  searchFilter,
+} from '@/components/Mixins/SearchFilterMixin';
 
 export default {
   name: 'Sensors',
@@ -120,7 +129,7 @@ export default {
     TableCellCount,
     TableFilter,
     TableToolbar,
-    TableToolbarExport
+    TableToolbarExport,
   },
   mixins: [
     TableFilterMixin,
@@ -128,62 +137,71 @@ export default {
     LoadingBarMixin,
     TableDataFormatterMixin,
     TableSortMixin,
-    SearchFilterMixin
+    SearchFilterMixin,
   ],
+  beforeRouteLeave(to, from, next) {
+    this.hideLoader();
+    next();
+  },
   data() {
     return {
       fields: [
         {
           key: 'checkbox',
           sortable: false,
-          label: ''
+          label: '',
         },
         {
           key: 'name',
           sortable: true,
-          label: this.$t('pageSensors.table.name')
+          label: this.$t('pageSensors.table.name'),
         },
         {
           key: 'status',
           sortable: true,
-          label: this.$t('pageSensors.table.status')
+          label: this.$t('pageSensors.table.status'),
+          tdClass: 'text-nowrap',
         },
         {
           key: 'lowerCritical',
           formatter: this.tableFormatter,
-          label: this.$t('pageSensors.table.lowerCritical')
+          label: this.$t('pageSensors.table.lowerCritical'),
         },
         {
           key: 'lowerCaution',
           formatter: this.tableFormatter,
-          label: this.$t('pageSensors.table.lowerWarning')
+          label: this.$t('pageSensors.table.lowerWarning'),
         },
 
         {
           key: 'currentValue',
           formatter: this.tableFormatter,
-          label: this.$t('pageSensors.table.currentValue')
+          label: this.$t('pageSensors.table.currentValue'),
         },
         {
           key: 'upperCaution',
           formatter: this.tableFormatter,
-          label: this.$t('pageSensors.table.upperWarning')
+          label: this.$t('pageSensors.table.upperWarning'),
         },
         {
           key: 'upperCritical',
           formatter: this.tableFormatter,
-          label: this.$t('pageSensors.table.upperCritical')
-        }
+          label: this.$t('pageSensors.table.upperCritical'),
+        },
       ],
       tableFilters: [
         {
           key: 'status',
           label: this.$t('pageSensors.table.status'),
-          values: ['OK', 'Warning', 'Critical']
-        }
+          values: ['OK', 'Warning', 'Critical'],
+        },
       ],
       activeFilters: [],
-      searchTotalFilteredRows: 0
+      searchFilter: searchFilter,
+      searchTotalFilteredRows: 0,
+      selectedRows: selectedRows,
+      tableHeaderCheckboxModel: tableHeaderCheckboxModel,
+      tableHeaderCheckboxIndeterminate: tableHeaderCheckboxIndeterminate,
     };
   },
   computed: {
@@ -197,17 +215,13 @@ export default {
     },
     filteredSensors() {
       return this.getFilteredTableData(this.allSensors, this.activeFilters);
-    }
+    },
   },
   created() {
     this.startLoader();
     this.$store
       .dispatch('sensors/getAllSensors')
       .finally(() => this.endLoader());
-  },
-  beforeRouteLeave(to, from, next) {
-    this.hideLoader();
-    next();
   },
   methods: {
     sortCompare(a, b, key) {
@@ -230,13 +244,9 @@ export default {
       date =
         date.toISOString().slice(0, 10) +
         '_' +
-        date
-          .toString()
-          .split(':')
-          .join('-')
-          .split(' ')[4];
+        date.toString().split(':').join('-').split(' ')[4];
       return this.$t('pageSensors.exportFilePrefix') + date;
-    }
-  }
+    },
+  },
 };
 </script>

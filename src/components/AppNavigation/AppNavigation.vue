@@ -53,6 +53,9 @@
 </template>
 
 <script>
+//Do not change Mixin import.
+//Exact match alias set to support
+//dotenv customizations.
 import AppNavigationMixin from './AppNavigationMixin';
 
 export default {
@@ -60,25 +63,25 @@ export default {
   mixins: [AppNavigationMixin],
   data() {
     return {
-      isNavigationOpen: false
+      isNavigationOpen: false,
     };
   },
   watch: {
-    $route: function() {
+    $route: function () {
       this.isNavigationOpen = false;
     },
-    isNavigationOpen: function(isNavigationOpen) {
-      this.$root.$emit('change:isNavigationOpen', isNavigationOpen);
-    }
+    isNavigationOpen: function (isNavigationOpen) {
+      this.$root.$emit('change-is-navigation-open', isNavigationOpen);
+    },
   },
   mounted() {
-    this.$root.$on('toggle:navigation', () => this.toggleIsOpen());
+    this.$root.$on('toggle-navigation', () => this.toggleIsOpen());
   },
   methods: {
     toggleIsOpen() {
       this.isNavigationOpen = !this.isNavigationOpen;
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -121,6 +124,7 @@ svg {
 }
 
 .btn-link {
+  display: inline-block;
   width: 100%;
   text-align: left;
   text-decoration: none !important;
@@ -147,23 +151,29 @@ svg {
   color: theme-color('secondary');
 
   &:hover {
-    background-color: gray('300');
+    background-color: theme-color-level(dark, -10.5);
     color: theme-color('dark');
   }
 
   &:focus {
-    box-shadow: $btn-focus-box-shadow;
+    background-color: theme-color-level(light, 0);
+    box-shadow: inset 0 0 0 2px theme-color('primary');
     color: theme-color('dark');
+    outline: 0;
+  }
+
+  &:active {
+    background-color: theme-color('secondary');
+    color: $white;
   }
 }
 
-.nav-link--current,
-.nav-link--current:hover,
-.nav-link--current:focus {
+.nav-link--current {
   font-weight: $headings-font-weight;
   background-color: theme-color('secondary');
   color: theme-color('light');
   cursor: default;
+  box-shadow: none;
 
   &::before {
     content: '';
@@ -173,6 +183,12 @@ svg {
     left: 0;
     width: 4px;
     background-color: theme-color('primary');
+  }
+
+  &:hover,
+  &:focus {
+    background-color: theme-color('secondary');
+    color: theme-color('light');
   }
 }
 
@@ -184,9 +200,11 @@ svg {
   left: 0;
   z-index: $zindex-fixed;
   overflow-y: auto;
-  background-color: gray('100');
+  background-color: theme-color('light');
   transform: translateX(-$navigation-width);
   transition: transform $exit-easing--productive $duration--moderate-02;
+  border-right: 1px solid theme-color-level('light', 2.85);
+
   @include media-breakpoint-down(md) {
     z-index: $zindex-fixed + 2;
   }
@@ -221,7 +239,8 @@ svg {
     transition: opacity $duration--fast-02 $exit-easing--productive;
   }
 
-  &.fade-enter,
+  &.fade-enter, // Remove this vue2 based only class when switching to vue3
+  &.fade-enter-from, // This is vue3 based only class modified from 'fade-enter'
   &.fade-leave-to {
     opacity: 0;
   }

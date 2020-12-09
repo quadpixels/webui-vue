@@ -1,27 +1,27 @@
 <template>
   <b-container fluid="xl">
     <page-title />
-    <b-row class="mb-3">
-      <b-col sm="7" xl="4" class="d-flex flex-column justify-content-end">
+    <b-row class="align-items-start">
+      <b-col sm="8" xl="6" class="d-sm-flex align-items-end">
         <search
           :placeholder="$t('pageEventLogs.table.searchLogs')"
-          @changeSearch="onChangeSearchInput"
-          @clearSearch="onClearSearchInput"
+          @change-search="onChangeSearchInput"
+          @clear-search="onClearSearchInput"
         />
+        <div class="ml-sm-4">
+          <table-cell-count
+            :filtered-items-count="filteredRows"
+            :total-number-of-cells="allLogs.length"
+          ></table-cell-count>
+        </div>
       </b-col>
-      <b-col sm="3" class="d-flex flex-column justify-content-end">
-        <table-cell-count
-          :filtered-items-count="filteredRows"
-          :total-number-of-cells="allLogs.length"
-        ></table-cell-count>
-      </b-col>
-      <b-col sm="8" md="7" xl="5">
+      <b-col sm="8" md="7" xl="6">
         <table-date-filter @change="onChangeDateTimeFilter" />
       </b-col>
     </b-row>
     <b-row>
       <b-col class="text-right">
-        <table-filter :filters="tableFilters" @filterChange="onFilterChange" />
+        <table-filter :filters="tableFilters" @filter-change="onFilterChange" />
       </b-col>
     </b-row>
     <b-row>
@@ -30,10 +30,10 @@
           ref="toolbar"
           :selected-items-count="selectedRows.length"
           :actions="batchActions"
-          @clearSelected="clearSelectedRows($refs.table)"
-          @batchAction="onBatchAction"
+          @clear-selected="clearSelectedRows($refs.table)"
+          @batch-action="onBatchAction"
         >
-          <template v-slot:export>
+          <template #export>
             <table-toolbar-export
               :data="batchExportData"
               :file-name="exportFileNameByDate()"
@@ -64,36 +64,40 @@
           @row-selected="onRowSelected($event, filteredLogs.length)"
         >
           <!-- Checkbox column -->
-          <template v-slot:head(checkbox)>
+          <template #head(checkbox)>
             <b-form-checkbox
               v-model="tableHeaderCheckboxModel"
               data-test-id="eventLogs-checkbox-selectAll"
               :indeterminate="tableHeaderCheckboxIndeterminate"
               @change="onChangeHeaderCheckbox($refs.table)"
-            />
+            >
+              <span class="sr-only">{{ $t('global.table.selectAll') }}</span>
+            </b-form-checkbox>
           </template>
-          <template v-slot:cell(checkbox)="row">
+          <template #cell(checkbox)="row">
             <b-form-checkbox
               v-model="row.rowSelected"
               :data-test-id="`eventLogs-checkbox-selectRow-${row.index}`"
               @change="toggleSelectRow($refs.table, row.index)"
-            />
+            >
+              <span class="sr-only">{{ $t('global.table.selectItem') }}</span>
+            </b-form-checkbox>
           </template>
 
           <!-- Severity column -->
-          <template v-slot:cell(severity)="{ value }">
+          <template #cell(severity)="{ value }">
             <status-icon v-if="value" :status="statusIcon(value)" />
             {{ value }}
           </template>
 
           <!-- Date column -->
-          <template v-slot:cell(date)="{ value }">
+          <template #cell(date)="{ value }">
             <p class="mb-0">{{ value | formatDate }}</p>
             <p class="mb-0">{{ value | formatTime }}</p>
           </template>
 
           <!-- Actions column -->
-          <template v-slot:cell(actions)="row">
+          <template #cell(actions)="row">
             <table-row-action
               v-for="(action, index) in row.item.actions"
               :key="index"
@@ -102,9 +106,9 @@
               :row-data="row.item"
               :export-name="exportFileNameByDate()"
               :data-test-id="`eventLogs-button-deleteRow-${row.index}`"
-              @click:tableAction="onTableRowAction($event, row.item)"
+              @click-table-action="onTableRowAction($event, row.item)"
             >
-              <template v-slot:icon>
+              <template #icon>
                 <icon-export v-if="action.value === 'export'" />
                 <icon-trashcan v-if="action.value === 'delete'" />
               </template>
@@ -116,7 +120,7 @@
 
     <!-- Table pagination -->
     <b-row>
-      <b-col class="d-md-flex justify-content-between">
+      <b-col sm="6">
         <b-form-group
           class="table-pagination-select"
           :label="$t('global.table.itemsPerPage')"
@@ -128,6 +132,8 @@
             :options="itemsPerPageOptions"
           />
         </b-form-group>
+      </b-col>
+      <b-col sm="6">
         <b-pagination
           v-model="currentPage"
           first-number
@@ -158,12 +164,22 @@ import TableToolbarExport from '@/components/Global/TableToolbarExport';
 
 import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
 import TableFilterMixin from '@/components/Mixins/TableFilterMixin';
-import BVPaginationMixin from '@/components/Mixins/BVPaginationMixin';
-import BVTableSelectableMixin from '@/components/Mixins/BVTableSelectableMixin';
+import BVPaginationMixin, {
+  currentPage,
+  perPage,
+  itemsPerPageOptions,
+} from '@/components/Mixins/BVPaginationMixin';
+import BVTableSelectableMixin, {
+  selectedRows,
+  tableHeaderCheckboxModel,
+  tableHeaderCheckboxIndeterminate,
+} from '@/components/Mixins/BVTableSelectableMixin';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 import TableDataFormatterMixin from '@/components/Mixins/TableDataFormatterMixin';
 import TableSortMixin from '@/components/Mixins/TableSortMixin';
-import SearchFilterMixin from '@/components/Mixins/SearchFilterMixin';
+import SearchFilterMixin, {
+  searchFilter,
+} from '@/components/Mixins/SearchFilterMixin';
 
 export default {
   components: {
@@ -177,7 +193,7 @@ export default {
     TableRowAction,
     TableToolbar,
     TableToolbarExport,
-    TableDateFilter
+    TableDateFilter,
   },
   mixins: [
     BVPaginationMixin,
@@ -187,63 +203,77 @@ export default {
     TableFilterMixin,
     TableDataFormatterMixin,
     TableSortMixin,
-    SearchFilterMixin
+    SearchFilterMixin,
   ],
+  beforeRouteLeave(to, from, next) {
+    // Hide loader if the user navigates to another page
+    // before request is fulfilled.
+    this.hideLoader();
+    next();
+  },
   data() {
     return {
       fields: [
         {
           key: 'checkbox',
-          sortable: false
+          sortable: false,
         },
         {
           key: 'id',
           label: this.$t('pageEventLogs.table.id'),
-          sortable: true
+          sortable: true,
         },
         {
           key: 'severity',
           label: this.$t('pageEventLogs.table.severity'),
-          sortable: true
+          sortable: true,
+          tdClass: 'text-nowrap',
         },
         {
           key: 'type',
           label: this.$t('pageEventLogs.table.type'),
-          sortable: true
+          sortable: true,
         },
         {
           key: 'date',
           label: this.$t('pageEventLogs.table.date'),
-          sortable: true
+          sortable: true,
         },
         {
           key: 'description',
-          label: this.$t('pageEventLogs.table.description')
+          label: this.$t('pageEventLogs.table.description'),
         },
         {
           key: 'actions',
           sortable: false,
           label: '',
-          tdClass: 'text-right text-nowrap'
-        }
+          tdClass: 'text-right text-nowrap',
+        },
       ],
       tableFilters: [
         {
           key: 'severity',
           label: this.$t('pageEventLogs.table.severity'),
-          values: ['OK', 'Warning', 'Critical']
-        }
+          values: ['OK', 'Warning', 'Critical'],
+        },
       ],
       activeFilters: [],
       batchActions: [
         {
           value: 'delete',
-          label: this.$t('global.action.delete')
-        }
+          label: this.$t('global.action.delete'),
+        },
       ],
+      currentPage: currentPage,
       filterStartDate: null,
       filterEndDate: null,
-      searchTotalFilteredRows: 0
+      itemsPerPageOptions: itemsPerPageOptions,
+      perPage: perPage,
+      searchFilter: searchFilter,
+      searchTotalFilteredRows: 0,
+      selectedRows: selectedRows,
+      tableHeaderCheckboxModel: tableHeaderCheckboxModel,
+      tableHeaderCheckboxIndeterminate: tableHeaderCheckboxIndeterminate,
     };
   },
   computed: {
@@ -253,24 +283,24 @@ export default {
         : this.filteredLogs.length;
     },
     allLogs() {
-      return this.$store.getters['eventLog/allEvents'].map(event => {
+      return this.$store.getters['eventLog/allEvents'].map((event) => {
         return {
           ...event,
           actions: [
             {
               value: 'export',
-              title: this.$t('global.action.export')
+              title: this.$t('global.action.export'),
             },
             {
               value: 'delete',
-              title: this.$t('global.action.delete')
-            }
-          ]
+              title: this.$t('global.action.delete'),
+            },
+          ],
         };
       });
     },
     batchExportData() {
-      return this.selectedRows.map(row => omit(row, 'actions'));
+      return this.selectedRows.map((row) => omit(row, 'actions'));
     },
     filteredLogsByDate() {
       return this.getFilteredTableDataByDate(
@@ -284,7 +314,7 @@ export default {
         this.filteredLogsByDate,
         this.activeFilters
       );
-    }
+    },
   },
   created() {
     this.startLoader();
@@ -292,23 +322,19 @@ export default {
       .dispatch('eventLog/getEventLogData')
       .finally(() => this.endLoader());
   },
-  beforeRouteLeave(to, from, next) {
-    // Hide loader if the user navigates to another page
-    // before request is fulfilled.
-    this.hideLoader();
-    next();
-  },
   methods: {
     deleteLogs(uris) {
-      this.$store.dispatch('eventLog/deleteEventLogs', uris).then(messages => {
-        messages.forEach(({ type, message }) => {
-          if (type === 'success') {
-            this.successToast(message);
-          } else if (type === 'error') {
-            this.errorToast(message);
-          }
+      this.$store
+        .dispatch('eventLog/deleteEventLogs', uris)
+        .then((messages) => {
+          messages.forEach(({ type, message }) => {
+            if (type === 'success') {
+              this.successToast(message);
+            } else if (type === 'error') {
+              this.errorToast(message);
+            }
+          });
         });
-      });
     },
     onFilterChange({ activeFilters }) {
       this.activeFilters = activeFilters;
@@ -323,16 +349,16 @@ export default {
         this.$bvModal
           .msgBoxConfirm(this.$tc('pageEventLogs.modal.deleteMessage'), {
             title: this.$tc('pageEventLogs.modal.deleteTitle'),
-            okTitle: this.$t('global.action.delete')
+            okTitle: this.$t('global.action.delete'),
           })
-          .then(deleteConfirmed => {
+          .then((deleteConfirmed) => {
             if (deleteConfirmed) this.deleteLogs([uri]);
           });
       }
     },
     onBatchAction(action) {
       if (action === 'delete') {
-        const uris = this.selectedRows.map(row => row.uri);
+        const uris = this.selectedRows.map((row) => row.uri);
         this.$bvModal
           .msgBoxConfirm(
             this.$tc(
@@ -344,11 +370,23 @@ export default {
                 'pageEventLogs.modal.deleteTitle',
                 this.selectedRows.length
               ),
-              okTitle: this.$t('global.action.delete')
+              okTitle: this.$t('global.action.delete'),
             }
           )
-          .then(deleteConfirmed => {
-            if (deleteConfirmed) this.deleteLogs(uris);
+          .then((deleteConfirmed) => {
+            if (deleteConfirmed) {
+              if (this.selectedRows.length === this.allLogs.length) {
+                this.$store
+                  .dispatch(
+                    'eventLog/deleteAllEventLogs',
+                    this.selectedRows.length
+                  )
+                  .then((message) => this.successToast(message))
+                  .catch(({ message }) => this.errorToast(message));
+              } else {
+                this.deleteLogs(uris);
+              }
+            }
           });
       }
     },
@@ -365,13 +403,9 @@ export default {
       date =
         date.toISOString().slice(0, 10) +
         '_' +
-        date
-          .toString()
-          .split(':')
-          .join('-')
-          .split(' ')[4];
+        date.toString().split(':').join('-').split(' ')[4];
       return this.$t('pageEventLogs.exportFilePrefix') + date;
-    }
-  }
+    },
+  },
 };
 </script>

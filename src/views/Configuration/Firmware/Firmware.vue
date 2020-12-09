@@ -1,97 +1,86 @@
 <template>
   <b-container fluid="xl">
     <page-title :description="$t('pageFirmware.pageDescription')" />
-    <!-- Operation in progress alert -->
-    <alert v-if="isOperationInProgress" variant="info" class="mb-5">
-      <p>
-        {{ $t('pageFirmware.alert.operationInProgress') }}
-      </p>
-    </alert>
-    <!-- Shutdown server warning alert -->
-    <alert v-else-if="!isHostOff" variant="warning" class="mb-5">
-      <p class="font-weight-bold mb-1">
-        {{ $t('pageFirmware.alert.serverShutdownRequiredBeforeUpdate') }}
-      </p>
-      {{ $t('pageFirmware.alert.serverShutdownRequiredInfo') }}
-      <template v-slot:action>
-        <b-btn variant="link" class="text-nowrap" @click="onClickShutDown">
-          {{ $t('pageFirmware.alert.shutDownServer') }}
-        </b-btn>
-      </template>
-    </alert>
     <b-row class="mb-4">
-      <!-- Firmware on system -->
       <b-col md="10" lg="12" xl="8" class="pr-xl-4">
-        <page-section :section-title="$t('pageFirmware.firmwareOnSystem')">
+        <!-- Firmware on BMC -->
+        <page-section :section-title="$t('pageFirmware.firmwareOnBmc')">
           <b-card-group deck>
             <!-- Current FW -->
             <b-card header-bg-variant="success">
-              <template v-slot:header>
+              <template #header>
                 <dl class="mb-0">
                   <dt>{{ $t('pageFirmware.current') }}</dt>
-                  <dd class="mb-0">{{ systemFirmwareVersion }}</dd>
+                  <dd class="mb-0">{{ bmcFirmwareCurrentVersion }}</dd>
                 </dl>
               </template>
-              <b-row>
-                <b-col xs="6">
-                  <dl class="my-0">
-                    <dt>{{ $t('pageFirmware.bmcStatus') }}</dt>
-                    <dd>{{ $t('pageFirmware.running') }}</dd>
-                  </dl>
-                </b-col>
-                <b-col xs="6">
-                  <dl class="my-0">
-                    <dt>{{ $t('pageFirmware.hostStatus') }}</dt>
-                    <dd v-if="hostStatus === 'on'">
-                      {{ $t('global.status.on') }}
-                    </dd>
-                    <dd v-else-if="hostStatus === 'off'">
-                      {{ $t('global.status.off') }}
-                    </dd>
-                    <dd v-else>
-                      {{ $t('global.status.notAvailable') }}
-                    </dd>
-                  </dl>
-                </b-col>
-              </b-row>
+              <dl class="my-0">
+                <dt>{{ $t('pageFirmware.state') }}:</dt>
+                <dd>{{ bmcFirmwareCurrentState }}</dd>
+              </dl>
+              <template #footer></template>
             </b-card>
 
             <!-- Backup FW -->
-            <b-card>
-              <template v-slot:header>
+            <b-card footer-class="p-0">
+              <template #header>
                 <dl class="mb-0">
                   <dt>{{ $t('pageFirmware.backup') }}</dt>
-                  <dd class="mb-0">{{ backupFirmwareVersion }}</dd>
+                  <dd class="mb-0">{{ bmcFirmwareBackupVersion }}</dd>
                 </dl>
               </template>
-              <b-row>
-                <b-col xs="6">
-                  <dl class="my-0">
-                    <dt>{{ $t('pageFirmware.state') }}</dt>
-                    <dd>{{ backupFirmwareStatus }}</dd>
-                  </dl>
-                </b-col>
-              </b-row>
+              <dl class="my-0">
+                <dt>{{ $t('pageFirmware.state') }}:</dt>
+                <dd>{{ bmcFirmwareBackupState }}</dd>
+              </dl>
+              <template #footer>
+                <b-btn
+                  v-b-modal.modal-reboot-backup-bmc
+                  :disabled="!bmcFirmwareBackupVersion"
+                  variant="link"
+                  size="sm"
+                >
+                  <icon-switch class="d-none d-sm-inline-block" />
+                  {{ $t('pageFirmware.makeCurrentVersion') }}</b-btn
+                >
+              </template>
             </b-card>
           </b-card-group>
         </page-section>
 
-        <!-- Change to backup image -->
-        <page-section :section-title="$t('pageFirmware.changeToBackupImage')">
-          <dl class="mb-5">
-            <dt>
-              {{ $t('pageFirmware.backupImage') }}
-            </dt>
-            <dd>{{ backupFirmwareVersion }}</dd>
-          </dl>
-          <b-btn
-            v-b-modal.modal-reboot-backup
-            type="button"
-            variant="primary"
-            :disabled="isPageDisabled || !isRebootFromBackupAvailable"
-          >
-            {{ $t('pageFirmware.changeAndRebootBmc') }}
-          </b-btn>
+        <!-- Firmware on Host -->
+        <page-section :section-title="$t('pageFirmware.firmwareOnHost')">
+          <b-card-group deck>
+            <!-- Current FW -->
+            <b-card header-bg-variant="success">
+              <template #header>
+                <dl class="mb-0">
+                  <dt>{{ $t('pageFirmware.current') }}</dt>
+                  <dd class="mb-0">{{ hostFirmwareCurrentVersion }}</dd>
+                </dl>
+              </template>
+              <!-- State -->
+              <dl class="my-0">
+                <dt>{{ $t('pageFirmware.state') }}:</dt>
+                <dd>{{ hostFirmwareCurrentState }}</dd>
+              </dl>
+            </b-card>
+
+            <!-- Backup FW -->
+            <b-card>
+              <template #header>
+                <dl class="mb-0">
+                  <dt>{{ $t('pageFirmware.backup') }}</dt>
+                  <dd class="mb-0">{{ hostFirmwareBackupVersion }}</dd>
+                </dl>
+              </template>
+              <!-- State -->
+              <dl class="my-0">
+                <dt>{{ $t('pageFirmware.state') }}:</dt>
+                <dd>{{ hostFirmwareBackupState }}</dd>
+              </dl>
+            </b-card>
+          </b-card-group>
         </page-section>
       </b-col>
 
@@ -99,10 +88,7 @@
       <b-col sm="8" xl="4" class="update-code pl-xl-4">
         <page-section :section-title="$t('pageFirmware.updateCode')">
           <b-form @submit.prevent="onSubmitUpload">
-            <b-form-group
-              :label="$t('pageFirmware.form.uploadLocation')"
-              :disabled="isPageDisabled"
-            >
+            <b-form-group :label="$t('pageFirmware.form.uploadLocation')">
               <b-form-radio v-model="isWorkstationSelected" :value="true">
                 {{ $t('pageFirmware.form.workstation') }}
               </b-form-radio>
@@ -113,28 +99,24 @@
 
             <!-- Workstation Upload -->
             <template v-if="isWorkstationSelected">
-              <b-form-group
-                :label="$t('pageFirmware.form.imageFile')"
-                label-for="image-file"
-              >
+              <b-form-group :label="$t('pageFirmware.form.imageFile')">
                 <b-form-text id="image-file-help-block">
                   {{ $t('pageFirmware.form.onlyTarFilesAccepted') }}
                 </b-form-text>
-                <b-form-file
+                <form-file
                   id="image-file"
-                  v-model="file"
                   accept=".tar"
-                  aria-describedby="image-file-help-block"
-                  :browse-text="$t('global.fileUpload.browseText')"
-                  :drop-placeholder="$t('global.fileUpload.dropPlaceholder')"
-                  :placeholder="$t('global.fileUpload.placeholder')"
                   :disabled="isPageDisabled"
                   :state="getValidationState($v.file)"
-                  @input="$v.file.$touch()"
-                />
-                <b-form-invalid-feedback role="alert">
-                  {{ $t('global.form.required') }}
-                </b-form-invalid-feedback>
+                  aria-describedby="image-file-help-block"
+                  @input="onFileUpload($event)"
+                >
+                  <template #invalid>
+                    <b-form-invalid-feedback role="alert">
+                      {{ $t('global.form.required') }}
+                    </b-form-invalid-feedback>
+                  </template>
+                </form-file>
               </b-form-group>
             </template>
 
@@ -169,7 +151,6 @@
                   v-model="tftpFileName"
                   type="text"
                   :state="getValidationState($v.tftpFileName)"
-                  :disabled="isPageDisabled"
                   @input="$v.tftpFileName.$touch()"
                 />
                 <b-form-invalid-feedback role="alert">
@@ -185,11 +166,10 @@
               </p>
               <p>{{ $t('pageFirmware.alert.updateProcessInfo') }}</p>
             </alert>
-            <b-form-group>
-              <b-btn type="submit" variant="primary" :disabled="isPageDisabled">
-                {{ $t('pageFirmware.form.uploadAndRebootBmc') }}
-              </b-btn>
-            </b-form-group>
+
+            <b-btn type="submit" variant="primary">
+              {{ $t('pageFirmware.form.uploadAndRebootBmcOrHost') }}
+            </b-btn>
           </b-form>
         </page-section>
       </b-col>
@@ -197,10 +177,10 @@
 
     <!-- Modals -->
     <modal-upload @ok="uploadFirmware" />
-    <modal-reboot-backup
-      :current="systemFirmwareVersion"
-      :backup="backupFirmwareVersion"
-      @ok="rebootFromBackup"
+    <modal-reboot-backup-bmc
+      :current="bmcFirmwareCurrentVersion || '--'"
+      :backup="bmcFirmwareBackupVersion || '--'"
+      @ok="switchBmcFirmware"
     />
   </b-container>
 </template>
@@ -208,97 +188,98 @@
 <script>
 import { requiredIf } from 'vuelidate/lib/validators';
 import { mapGetters } from 'vuex';
+import IconSwitch from '@carbon/icons-vue/es/arrows--horizontal/20';
 
 import PageSection from '@/components/Global/PageSection';
 import PageTitle from '@/components/Global/PageTitle';
 import Alert from '@/components/Global/Alert';
 import ModalUpload from './FirmwareModalUpload';
-import ModalRebootBackup from './FirmwareModalRebootBackup';
+import ModalRebootBackupBmc from './FirmwareModalRebootBackupBmc';
+import FormFile from '@/components/Global/FormFile';
 
 import VuelidateMixin from '@/components/Mixins/VuelidateMixin.js';
-import LoadingBarMixin from '@/components/Mixins/LoadingBarMixin';
+import LoadingBarMixin, { loading } from '@/components/Mixins/LoadingBarMixin';
 import BVToastMixin from '@/components/Mixins/BVToastMixin';
 
 export default {
   name: 'Firmware',
   components: {
     Alert,
-    ModalRebootBackup,
+    IconSwitch,
+    ModalRebootBackupBmc,
     ModalUpload,
     PageSection,
-    PageTitle
+    PageTitle,
+    FormFile,
   },
   mixins: [BVToastMixin, LoadingBarMixin, VuelidateMixin],
+  beforeRouteLeave(to, from, next) {
+    this.hideLoader();
+    this.clearRebootTimeout();
+    next();
+  },
   data() {
     return {
       isWorkstationSelected: true,
       file: null,
       tftpIpAddress: null,
       tftpFileName: null,
-      timeoutId: null
+      timeoutId: null,
+      isPageDisabled: null,
+      loading: loading,
     };
   },
   computed: {
-    hostStatus() {
-      return this.$store.getters['global/hostStatus'];
-    },
-    isHostOff() {
-      return this.hostStatus === 'off' ? true : false;
-    },
-    isOperationInProgress() {
-      return this.$store.getters['controls/isOperationInProgress'];
-    },
     ...mapGetters('firmware', [
-      'backupFirmwareStatus',
-      'backupFirmwareVersion',
-      'isRebootFromBackupAvailable',
-      'systemFirmwareVersion'
+      'bmcFirmwareCurrentVersion',
+      'bmcFirmwareCurrentState',
+      'bmcFirmwareBackupVersion',
+      'bmcFirmwareBackupState',
+      'hostFirmwareCurrentVersion',
+      'hostFirmwareCurrentState',
+      'hostFirmwareBackupVersion',
+      'hostFirmwareBackupState',
     ]),
-    isPageDisabled() {
-      return !this.isHostOff || this.loading || this.isOperationInProgress;
-    }
   },
   watch: {
-    isWorkstationSelected: function() {
+    isWorkstationSelected: function () {
       this.$v.$reset();
       this.file = null;
       this.tftpIpAddress = null;
       this.tftpFileName = null;
-    }
+    },
   },
   created() {
     this.startLoader();
     this.$store.dispatch('firmware/getUpdateServiceApplyTime');
-    Promise.all([
-      this.$store.dispatch('global/getHostStatus'),
-      this.$store.dispatch('firmware/getSystemFirwareVersion')
-    ]).finally(() => this.endLoader());
-  },
-  beforeRouteLeave(to, from, next) {
-    this.hideLoader();
-    this.clearRebootTimeout();
-    next();
+    this.$store
+      .dispatch('firmware/getFirmwareInformation')
+      .finally(() => this.endLoader());
   },
   validations() {
     return {
       file: {
-        required: requiredIf(function() {
+        required: requiredIf(function () {
           return this.isWorkstationSelected;
-        })
+        }),
       },
       tftpIpAddress: {
-        required: requiredIf(function() {
+        required: requiredIf(function () {
           return !this.isWorkstationSelected;
-        })
+        }),
       },
       tftpFileName: {
-        required: requiredIf(function() {
+        required: requiredIf(function () {
           return !this.isWorkstationSelected;
-        })
-      }
+        }),
+      },
     };
   },
   methods: {
+    onFileUpload(file) {
+      this.file = file;
+      this.$v.file.$touch();
+    },
     uploadFirmware() {
       const startTime = this.$options.filters.formatTime(new Date());
       this.setRebootTimeout(360000); //6 minute timeout
@@ -315,7 +296,7 @@ export default {
     dispatchWorkstationUpload() {
       this.$store
         .dispatch('firmware/uploadFirmware', this.file)
-        .then(success =>
+        .then((success) =>
           this.infoToast(
             success,
             this.$t('pageFirmware.toast.successUploadTitle')
@@ -329,11 +310,11 @@ export default {
     dispatchTftpUpload() {
       const data = {
         address: this.tftpIpAddress,
-        filename: this.tftpFileName
+        filename: this.tftpFileName,
       };
       this.$store
         .dispatch('firmware/uploadFirmwareTFTP', data)
-        .then(success =>
+        .then((success) =>
           this.infoToast(
             success,
             this.$t('pageFirmware.toast.successUploadTitle')
@@ -344,11 +325,11 @@ export default {
           this.clearRebootTimeout();
         });
     },
-    rebootFromBackup() {
+    switchBmcFirmware() {
       this.setRebootTimeout();
       this.$store
-        .dispatch('firmware/switchFirmwareAndReboot')
-        .then(success =>
+        .dispatch('firmware/switchBmcFirmware')
+        .then((success) =>
           this.infoToast(success, this.$t('global.status.success'))
         )
         .catch(({ message }) => {
@@ -379,19 +360,7 @@ export default {
       if (this.$v.$invalid) return;
       this.$bvModal.show('modal-upload');
     },
-    onClickShutDown() {
-      this.$bvModal
-        .msgBoxConfirm(this.$t('pageFirmware.modal.serverShutdownMessage'), {
-          title: this.$t('pageFirmware.modal.serverShutdownWillCauseOutage'),
-          okTitle: this.$t('pageFirmware.modal.shutDownServer'),
-          okVariant: 'danger'
-        })
-        .then(shutdownConfirmed => {
-          if (shutdownConfirmed)
-            this.$store.dispatch('controls/hostSoftPowerOff');
-        });
-    }
-  }
+  },
 };
 </script>
 
@@ -401,5 +370,11 @@ export default {
   @include media-breakpoint-up(xl) {
     border-left: 1px solid gray('300');
   }
+}
+.card-footer {
+  height: 40px;
+}
+.card-body {
+  padding: 0.75rem 1.25rem;
 }
 </style>

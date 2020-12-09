@@ -3,9 +3,9 @@
     <div
       v-if="
         variant == 'info' ||
-          variant == 'success' ||
-          variant == 'warning' ||
-          variant == 'danger'
+        variant == 'success' ||
+        variant == 'warning' ||
+        variant == 'danger'
       "
       class="alert-icon"
     >
@@ -23,25 +23,25 @@
 </template>
 
 <script>
-import StatusIcon from '../Global/StatusIcon';
+import StatusIcon from '@/components/Global/StatusIcon';
 import { BAlert } from 'bootstrap-vue';
 
 export default {
   name: 'Alert',
   components: {
     BAlert: BAlert,
-    StatusIcon: StatusIcon
+    StatusIcon: StatusIcon,
   },
   props: {
     show: {
       type: Boolean,
-      default: true
+      default: true,
     },
     variant: {
       type: String,
-      default: ''
+      default: '',
     },
-    small: Boolean
-  }
+    small: Boolean,
+  },
 };
 </script>

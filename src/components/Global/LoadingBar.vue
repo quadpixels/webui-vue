@@ -18,17 +18,17 @@ export default {
       loadingIndicatorValue: 0,
       isLoadingComplete: false,
       loadingIntervalId: null,
-      timeoutId: null
+      timeoutId: null,
     };
   },
   created() {
-    this.$root.$on('loader::start', () => {
+    this.$root.$on('loader-start', () => {
       this.startLoadingInterval();
     });
-    this.$root.$on('loader::end', () => {
+    this.$root.$on('loader-end', () => {
       this.endLoadingInterval();
     });
-    this.$root.$on('loader::hide', () => {
+    this.$root.$on('loader-hide', () => {
       this.hideLoadingBar();
     });
   },
@@ -66,8 +66,8 @@ export default {
     clearTimeout() {
       if (this.timeoutId) clearTimeout(this.timeoutId);
       this.timeoutId = null;
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -80,7 +80,9 @@ export default {
   opacity: 1;
   transition: opacity $duration--moderate-01 $standard-easing--productive;
   height: 0.4rem;
-  &.fade-enter,
+
+  &.fade-enter, // Remove this vue2 based only class when switching to vue3
+  &.fade-enter-from, // This is vue3 based only class modified from 'fade-enter'
   &.fade-leave-to {
     opacity: 0;
   }

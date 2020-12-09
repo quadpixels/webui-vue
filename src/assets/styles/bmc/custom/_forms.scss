@@ -80,7 +80,7 @@
 .custom-checkbox .custom-control-input:indeterminate ~ .custom-control-label::before,
 .custom-control-input:checked ~ .custom-control-label::before  {
   background-color: $black;
-  border: 1px solid $white;
+  border-color: $black;
   cursor: pointer;
 }
 

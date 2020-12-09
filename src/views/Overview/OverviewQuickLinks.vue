@@ -14,15 +14,13 @@
         <dt>{{ $t('pageOverview.quicklinks.serverLed') }}</dt>
         <dd>
           <b-form-checkbox
-            v-model="serverLedChecked"
+            v-model="indicatorLedActiveState"
             data-test-id="overviewQuickLinks-checkbox-serverLed"
             name="check-button"
             switch
-            value="Lit"
-            unchecked-value="Off"
             @change="onChangeServerLed"
           >
-            <span v-if="serverLedChecked !== 'Off'">
+            <span v-if="indicatorLedActiveState">
               {{ $t('global.status.on') }}
             </span>
             <span v-else>{{ $t('global.status.off') }}</span>
@@ -37,7 +35,7 @@
         data-test-id="overviewQuickLinks-button-networkSettings"
         class="d-flex justify-content-between align-items-center"
       >
-        <span>{{ $t('pageOverview.quicklinks.editNetworkSettings') }}</span>
+        {{ $t('pageOverview.quicklinks.editNetworkSettings') }}
         <icon-arrow-right />
       </b-button>
     </div>
@@ -48,7 +46,7 @@
         data-test-id="overviewQuickLinks-button-solConsole"
         class="d-flex justify-content-between align-items-center"
       >
-        <span>{{ $t('pageOverview.quicklinks.solConsole') }}</span>
+        {{ $t('pageOverview.quicklinks.solConsole') }}
         <icon-arrow-right />
       </b-button>
     </div>
@@ -62,38 +60,41 @@ import BVToastMixin from '@/components/Mixins/BVToastMixin';
 export default {
   name: 'QuickLinks',
   components: {
-    IconArrowRight: ArrowRight16
+    IconArrowRight: ArrowRight16,
   },
   mixins: [BVToastMixin],
   computed: {
     bmcTime() {
       return this.$store.getters['global/bmcTime'];
     },
-    serverLedChecked: {
+    indicatorLedActiveState: {
       get() {
-        return this.$store.getters['serverLed/getIndicatorValue'];
+        return this.$store.getters['serverLed/getIndicatorLedActiveState'];
       },
       set(value) {
         return value;
-      }
-    }
+      },
+    },
   },
   created() {
     Promise.all([
       this.$store.dispatch('global/getBmcTime'),
-      this.$store.dispatch('serverLed/getIndicatorValue')
+      this.$store.dispatch('serverLed/getIndicatorLedActiveState'),
     ]).finally(() => {
-      this.$root.$emit('overview::quicklinks::complete');
+      this.$root.$emit('overview-quicklinks-complete');
     });
   },
   methods: {
-    onChangeServerLed(value) {
+    onChangeServerLed(indicatorLedActiveState) {
       this.$store
-        .dispatch('serverLed/saveIndicatorLedValue', value)
-        .then(message => this.successToast(message))
+        .dispatch(
+          'serverLed/saveIndicatorLedActiveState',
+          indicatorLedActiveState
+        )
+        .then((message) => this.successToast(message))
         .catch(({ message }) => this.errorToast(message));
-    }
-  }
+    },
+  },
 };
 </script>
 

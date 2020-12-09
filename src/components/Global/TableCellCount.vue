@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-2 d-flex flex-column justify-content-end">
+  <div class="mt-2">
     <p v-if="!filterActive">
       {{ $t('global.table.items', { count: totalNumberOfCells }) }}
     </p>
@@ -7,7 +7,7 @@
       {{
         $t('global.table.selectedItems', {
           count: totalNumberOfCells,
-          filterCount: filteredItemsCount
+          filterCount: filteredItemsCount,
         })
       }}
     </p>
@@ -19,17 +19,17 @@ export default {
   props: {
     filteredItemsCount: {
       type: Number,
-      required: true
+      required: true,
     },
     totalNumberOfCells: {
       type: Number,
-      required: true
-    }
+      required: true,
+    },
   },
   computed: {
     filterActive() {
       return this.filteredItemsCount !== this.totalNumberOfCells;
-    }
-  }
+    },
+  },
 };
 </script>

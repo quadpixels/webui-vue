@@ -4,6 +4,8 @@
     <app-navigation class="app-navigation" />
     <page-container class="app-content">
       <router-view ref="routerView" :key="routerKey" />
+      <!-- Scroll to top button -->
+      <button-back-to-top />
     </page-container>
   </div>
 </template>
@@ -11,23 +13,26 @@
 <script>
 import AppHeader from '@/components/AppHeader';
 import AppNavigation from '@/components/AppNavigation';
-import PageContainer from '../components/Global/PageContainer';
+import PageContainer from '@/components/Global/PageContainer';
+import ButtonBackToTop from '@/components/Global/ButtonBackToTop';
+
 export default {
   name: 'App',
   components: {
     AppHeader,
     AppNavigation,
-    PageContainer
+    PageContainer,
+    ButtonBackToTop,
   },
   data() {
     return {
-      routerKey: 0
+      routerKey: 0,
     };
   },
   watch: {
-    $route: function() {
+    $route: function () {
       // $nextTick = DOM updated
-      this.$nextTick(function() {
+      this.$nextTick(function () {
         // Get the focusTarget DOM element
         let focusTarget = this.$refs.focusTarget.$el;
 
@@ -41,15 +46,15 @@ export default {
         // Reason: https://axesslab.com/skip-links/#update-3-a-comment-from-gov-uk
         focusTarget.removeAttribute('tabindex');
       });
-    }
+    },
   },
   methods: {
     refresh() {
       // Changing the component :key value will trigger
       // a component re-rendering and 'refresh' the view
       this.routerKey += 1;
-    }
-  }
+    },
+  },
 };
 </script>
 

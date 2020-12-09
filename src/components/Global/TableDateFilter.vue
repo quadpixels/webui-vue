@@ -23,32 +23,28 @@
               {{ $t('global.form.dateMustBeBefore', { date: toDate }) }}
             </template>
           </b-form-invalid-feedback>
-          <template slot:append>
-            <b-form-datepicker
-              v-model="fromDate"
-              class="input-action"
-              button-only
-              right
-              :max="toDate"
-              :hide-header="true"
-              :locale="locale"
-              :label-help="
-                $t('global.calendar.useCursorKeysToNavigateCalendarDates')
-              "
-              button-variant="link"
-              aria-controls="input-from-date"
-            >
-              <template v-slot:button-content>
-                <icon-calendar
-                  :title="$t('global.calendar.openDatePicker')"
-                  aria-hidden="true"
-                />
-                <span class="sr-only">{{
-                  $t('global.calendar.openDatePicker')
-                }}</span>
-              </template>
-            </b-form-datepicker>
-          </template>
+          <b-form-datepicker
+            v-model="fromDate"
+            class="btn-datepicker btn-icon-only"
+            button-only
+            right
+            :max="toDate"
+            :hide-header="true"
+            :locale="locale"
+            :label-help="
+              $t('global.calendar.useCursorKeysToNavigateCalendarDates')
+            "
+            :title="$t('global.calendar.selectDate')"
+            button-variant="link"
+            aria-controls="input-from-date"
+          >
+            <template #button-content>
+              <icon-calendar />
+              <span class="sr-only">
+                {{ $t('global.calendar.selectDate') }}
+              </span>
+            </template>
+          </b-form-datepicker>
         </b-input-group>
       </b-form-group>
       <b-form-group
@@ -73,32 +69,28 @@
               {{ $t('global.form.dateMustBeAfter', { date: fromDate }) }}
             </template>
           </b-form-invalid-feedback>
-          <template slot:append>
-            <b-form-datepicker
-              v-model="toDate"
-              class="input-action"
-              button-only
-              right
-              :min="fromDate"
-              :hide-header="true"
-              :locale="locale"
-              :label-help="
-                $t('global.calendar.useCursorKeysToNavigateCalendarDates')
-              "
-              button-variant="link"
-              aria-controls="input-to-date"
-            >
-              <template v-slot:button-content>
-                <icon-calendar
-                  :title="$t('global.calendar.openDatePicker')"
-                  aria-hidden="true"
-                />
-                <span class="sr-only">{{
-                  $t('global.calendar.openDatePicker')
-                }}</span>
-              </template>
-            </b-form-datepicker>
-          </template>
+          <b-form-datepicker
+            v-model="toDate"
+            class="btn-datepicker btn-icon-only"
+            button-only
+            right
+            :min="fromDate"
+            :hide-header="true"
+            :locale="locale"
+            :label-help="
+              $t('global.calendar.useCursorKeysToNavigateCalendarDates')
+            "
+            :title="$t('global.calendar.selectDate')"
+            button-variant="link"
+            aria-controls="input-to-date"
+          >
+            <template #button-content>
+              <icon-calendar />
+              <span class="sr-only">
+                {{ $t('global.calendar.selectDate') }}
+              </span>
+            </template>
+          </b-form-datepicker>
         </b-input-group>
       </b-form-group>
     </b-col>
@@ -121,31 +113,31 @@ export default {
       fromDate: '',
       toDate: '',
       offsetToDate: '',
-      locale: this.$store.getters['global/languagePreference']
+      locale: this.$store.getters['global/languagePreference'],
     };
   },
   validations() {
     return {
       fromDate: {
         pattern: helpers.regex('pattern', isoDateRegex),
-        maxDate: value => {
+        maxDate: (value) => {
           if (!this.toDate) return true;
           const date = new Date(value);
           const maxDate = new Date(this.toDate);
           if (date.getTime() > maxDate.getTime()) return false;
           return true;
-        }
+        },
       },
       toDate: {
         pattern: helpers.regex('pattern', isoDateRegex),
-        minDate: value => {
+        minDate: (value) => {
           if (!this.fromDate) return true;
           const date = new Date(value);
           const minDate = new Date(this.fromDate);
           if (date.getTime() < minDate.getTime()) return false;
           return true;
-        }
-      }
+        },
+      },
     };
   },
   watch: {
@@ -157,7 +149,7 @@ export default {
       // entries from selected end date are included in filter
       this.offsetToDate = new Date(newVal).setUTCHours(23, 59, 59, 999);
       this.emitChange();
-    }
+    },
   },
   methods: {
     emitChange() {
@@ -165,9 +157,9 @@ export default {
       this.$v.$reset(); //reset to re-validate on blur
       this.$emit('change', {
         fromDate: this.fromDate ? new Date(this.fromDate) : null,
-        toDate: this.toDate ? new Date(this.offsetToDate) : null
+        toDate: this.toDate ? new Date(this.offsetToDate) : null,
       });
-    }
-  }
+    },
+  },
 };
 </script>
